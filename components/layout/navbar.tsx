@@ -8,19 +8,41 @@ import { cn } from "@/lib/utils"
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
+  const [visible, setVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 50)
+      const currentScrollY = window.scrollY
+      const scrollDifference = Math.abs(currentScrollY - lastScrollY)
+      
+      // Only update if we've scrolled enough to prevent jitter
+      if (scrollDifference > 10) {
+        if (currentScrollY > lastScrollY && currentScrollY > 100) {
+          // Scrolling down & past initial threshold - hide navbar
+          setVisible(false)
+        } else if (currentScrollY < lastScrollY) {
+          // Scrolling up - show navbar
+          setVisible(true)
+        }
+        setLastScrollY(currentScrollY)
+      }
+      
+      // Background blur effect
+      setScrolled(currentScrollY > 50)
     }
-    window.addEventListener("scroll", handleScroll)
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  }, [lastScrollY])
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-7xl mx-auto px-4">
+    <div className={cn(
+      "fixed left-1/2 -translate-x-1/2 z-50 w-full max-w-7xl mx-auto px-4 transition-all duration-200 ease-out",
+      visible ? "top-4" : "-top-20"
+    )}>
       <header className={cn(
-        "flex items-center justify-between h-16 px-6 rounded-2xl border transition-all duration-300",
+        "flex items-center justify-between h-16 px-6 rounded-2xl border transition-all duration-200",
         scrolled 
           ? "bg-background/80 backdrop-blur-md shadow-lg border-border/50" 
           : "bg-background/60 backdrop-blur-sm border-border/20"
