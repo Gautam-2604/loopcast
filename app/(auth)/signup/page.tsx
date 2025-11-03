@@ -8,17 +8,67 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export default function SignUpPage() {
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    // TODO: Implement Supabase signup
-    console.log("Email signup:", { email, password })
-    setTimeout(() => setIsLoading(false), 1000) // Mock loading
+    setError("")
+    setSuccess("")
+    
+    // Validation
+    if (password !== confirmPassword) {
+      setError("Passwords do not match")
+      return
+    }
+    
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters")
+      return
+    }
+    
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/auth/sign-up', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          password
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create account')
+      }
+
+      setSuccess("Account created successfully! You can now sign in.")
+      // Clear form
+      setName("")
+      setEmail("")
+      setPassword("")
+      setConfirmPassword("")
+      
+      // Redirect to login after 2 seconds
+      setTimeout(() => {
+        window.location.href = '/login'
+      }, 2000)
+      
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An error occurred')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleGoogleSignUp = async () => {
@@ -86,8 +136,36 @@ export default function SignUpPage() {
             </div>
           </div>
           
+          {/* Error/Success Messages */}
+          {error && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="p-3 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              {success}
+            </div>
+          )}
+
           {/* Email Form */}
           <form onSubmit={handleEmailSignUp} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-sm font-medium">
+                Full Name
+              </Label>
+              <Input
+                id="name"
+                type="text"
+                placeholder="Enter your full name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+                className="h-11 text-base border-2 border-border/50 focus:border-primary/50 transition-colors"
+              />
+            </div>
+
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
                 Email

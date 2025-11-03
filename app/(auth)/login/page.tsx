@@ -11,13 +11,45 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState("")
+  const [success, setSuccess] = useState("")
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    // TODO: Implement Supabase login
-    console.log("Email login:", { email, password })
-    setTimeout(() => setIsLoading(false), 1000) // Mock loading
+    setError("")
+    setSuccess("")
+    
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/auth/sign-in', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email,
+          password
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to sign in')
+      }
+
+      setSuccess("Sign in successful! Redirecting to dashboard...")
+      
+      // Redirect to dashboard after 1 second
+      setTimeout(() => {
+        window.location.href = '/dashboard'
+      }, 1000)
+      
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An error occurred')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleGoogleLogin = async () => {
@@ -85,6 +117,19 @@ export default function LoginPage() {
             </div>
           </div>
           
+          {/* Error/Success Messages */}
+          {error && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              {error}
+            </div>
+          )}
+          
+          {success && (
+            <div className="p-3 text-sm text-green-600 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              {success}
+            </div>
+          )}
+
           {/* Email Form */}
           <form onSubmit={handleEmailLogin} className="space-y-4">
             <div className="space-y-2">

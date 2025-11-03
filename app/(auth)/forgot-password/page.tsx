@@ -11,16 +11,35 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [isEmailSent, setIsEmailSent] = useState(false)
+  const [error, setError] = useState("")
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
-    // TODO: Implement Supabase password reset
-    console.log("Password reset for:", email)
-    setTimeout(() => {
-      setIsLoading(false)
+    setError("")
+    
+    try {
+      setIsLoading(true)
+      const response = await fetch('/api/auth/forgot-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send reset email')
+      }
+
       setIsEmailSent(true)
-    }, 1000) // Mock loading
+      
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An error occurred')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   if (isEmailSent) {
@@ -54,7 +73,10 @@ export default function ForgotPasswordPage() {
               <p className="text-sm text-muted-foreground">
                 Didn't receive the email? Check your spam folder or{" "}
                 <button 
-                  onClick={() => setIsEmailSent(false)}
+                  onClick={() => {
+                    setIsEmailSent(false)
+                    setError("")
+                  }}
                   className="font-medium text-foreground hover:underline transition-all duration-200"
                 >
                   try again
@@ -99,6 +121,13 @@ export default function ForgotPasswordPage() {
         </CardHeader>
         
         <CardContent className="space-y-6">
+          {/* Error Message */}
+          {error && (
+            <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              {error}
+            </div>
+          )}
+
           <form onSubmit={handleResetPassword} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email" className="text-sm font-medium">
