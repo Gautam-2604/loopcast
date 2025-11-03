@@ -6,12 +6,12 @@ import { NextRequest, NextResponse } from "next/server";
 
 const JWT_SECRET = process.env.JWT_SECRET_KEY!
 
-// Email configuration
+
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // or your email service
+    service: 'gmail', 
     auth: {
-        user: process.env.EMAIL_USER, // your email
-        pass: process.env.EMAIL_PASS  // your app password
+        user: process.env.EMAIL_USER, 
+        pass: process.env.EMAIL_PASS  
     }
 })
 
@@ -68,14 +68,12 @@ export async function POST(req: NextRequest) {
 
         const existing = await userModel.findOne({ email });
         if (!existing) {
-            // Return success even if user doesn't exist for security reasons
             return NextResponse.json({ 
                 success: true, 
                 message: "If an account with this email exists, a password reset link has been sent." 
             }, { status: 200 });
         }
 
-        // Generate password reset token (valid for 1 hour)
         const resetToken = jwt.sign(
             { 
                 userId: existing._id,
@@ -99,13 +97,11 @@ export async function POST(req: NextRequest) {
             console.log(`Password reset email sent to: ${email}`);
         } catch (emailError) {
             console.error('Failed to send email:', emailError);
-            // Don't reveal email sending failure to prevent information disclosure
         }
 
         return NextResponse.json({ 
             success: true, 
             message: "If an account with this email exists, a password reset link has been sent.",
-            // Only include debug info in development
             ...(process.env.NODE_ENV === 'development' && { 
                 debug: {
                     resetToken,
