@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "@/context/authContext"
 
 export default function SignUpPage() {
   const [name, setName] = useState("")
@@ -15,6 +16,7 @@ export default function SignUpPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const {signup}= useAuth()
 
   const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -33,24 +35,7 @@ export default function SignUpPage() {
     }
     
     try {
-      setIsLoading(true)
-      const response = await fetch('/api/auth/sign-up', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password
-        })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create account')
-      }
+      await signup(email, password, name)
 
       setSuccess("Account created successfully! You can now sign in.")
       // Clear form
@@ -75,7 +60,7 @@ export default function SignUpPage() {
     setIsLoading(true)
     // TODO: Implement Google OAuth
     console.log("Google signup")
-    setTimeout(() => setIsLoading(false), 1000) // Mock loading
+    setTimeout(() => setIsLoading(false), 1000) 
   }
 
   return (

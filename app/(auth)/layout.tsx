@@ -1,7 +1,4 @@
 import type { Metadata } from "next";
-import { ThemeProvider } from "@/components/theme-provider";
-import { ThemeToggle } from "@/components/theme-toggle";
-import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "LoopCast - Authentication",
