@@ -6,13 +6,16 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from "@/context/authContext"
+import { useRouter } from "next/navigation"
 
 export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
+  const { login, isLoading } = useAuth()
+  const router = useRouter()
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,43 +23,22 @@ export default function LoginPage() {
     setSuccess("")
     
     try {
-      setIsLoading(true)
-      const response = await fetch('/api/auth/sign-in', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email,
-          password
-        })
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to sign in')
-      }
-
+      await login(email, password)
       setSuccess("Sign in successful! Redirecting to dashboard...")
       
       // Redirect to dashboard after 1 second
       setTimeout(() => {
-        window.location.href = '/dashboard'
+        router.push('/dashboard')
       }, 1000)
       
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred')
-    } finally {
-      setIsLoading(false)
     }
   }
 
   const handleGoogleLogin = async () => {
-    setIsLoading(true)
     // TODO: Implement Google OAuth
     console.log("Google login")
-    setTimeout(() => setIsLoading(false), 1000) // Mock loading
   }
 
   return (

@@ -5,11 +5,13 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { cn } from "@/lib/utils"
+import { useAuth } from "@/context/authContext"
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [visible, setVisible] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const { user} = useAuth()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -75,16 +77,19 @@ export function Navbar() {
 
         <div className="flex items-center space-x-2">
           <ThemeToggle />
-          <Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
-            <Link href="/signin">Sign In</Link>
-          </Button>
-          <Button 
-            size="sm" 
-            className="bg-foreground text-background hover:bg-foreground/90 shadow-lg hover:shadow-xl transition-all duration-200" 
-            asChild
-          >
-            <Link href="/signup">Try Free</Link>
-          </Button>
+          {!user && (
+            <><Button variant="ghost" size="sm" className="hidden sm:inline-flex" asChild>
+              <Link href="/login">Sign In</Link>
+            </Button><Button
+              size="sm"
+              className="bg-foreground text-background hover:bg-foreground/90 shadow-lg hover:shadow-xl transition-all duration-200"
+              asChild
+            >
+                <Link href="/signup">Try Free</Link>
+              </Button></>
+          )}
+
+          
         </div>
       </header>
     </div>
